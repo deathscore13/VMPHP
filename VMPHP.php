@@ -9,7 +9,7 @@
 
 class VMPHP
 {
-    private ?string $binary = null;
+    private string $binary;
 
     /**
      * Конструктор
@@ -19,8 +19,8 @@ class VMPHP
     public function __construct(?string $binary = null)
     {
         if (($binary === null && ($binary = self::findBinary()) === null) || !@file_exists($binary))
-            throw new Exeption('PHP binary not found');
-
+            throw new Exception('PHP binary not found');
+        
         $this->binary = $binary;
     }
 
@@ -51,7 +51,7 @@ class VMPHP
         else
             $errPath = 'php/'.$errPath;
 
-        return new VirtualMachine($errPath, $this->binary.' '.$phpOpt.'-f '.$file, $cwd, $env, $options);
+        return new VirtualMachine($errPath, $this->binary.' '.$phpOpt.$file, $cwd, $env, $options);
     }
 
     /**
@@ -61,18 +61,23 @@ class VMPHP
      */
     public static function findBinary(): ?string
     {
-        if ((PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server') && @file_exists(PHP_BINARY))
-            return PHP_BINARY;
+        static $binary = null;
+
+        if ($binary === null)
+            $binary = @file_exists(PHP_BINARY) ? PHP_BINARY : PHP_BINDIR.'/php';
+
+        if (PHP_SAPI === 'cli' || PHP_SAPI === 'cli-server')
+            return $binary;
         
-        $len = strlen(PHP_BINARY);
-        $pos = strrpos(PHP_BINARY, '-cgi');
+        $len = strlen($binary);
+        $pos = strrpos($binary, '-cgi');
         if (($pos && $len === ($pos + 4)) ||
-            (($pos = strrpos(PHP_BINARY, '-fpm')) && $len === ($pos + 4)))
+            (($pos = strrpos($binary, '-fpm')) && $len === ($pos + 4)))
         {
-            $bin = substr(PHP_BINARY, 0, $pos);
+            $bin = substr($binary, 0, $pos);
         }
         
-        $cli = ($bin ?? PHP_BINARY).'-cli';
+        $cli = ($bin ?? $binary).'-cli';
         if (@file_exists($cli))
             return $cli;
         
