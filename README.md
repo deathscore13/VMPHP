@@ -41,7 +41,7 @@ require('VirtualMachine/TrashSkip.php');
 $vm = new VMPHP();
 
 // открытие test.php в дочернем процессе
-$test = $vm->run('test2.php');
+$test = $vm->run('test.php');
 
 // пропуск мусора из вывода
 VMTrashSkip::parent($test);
