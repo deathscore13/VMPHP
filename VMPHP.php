@@ -84,6 +84,6 @@ class VMPHP
         if (isset($bin) && @file_exists($bin))
             return $bin;
 
-        return null;
+        return @file_exists($binary) ? $binary : null;
     }
 }
